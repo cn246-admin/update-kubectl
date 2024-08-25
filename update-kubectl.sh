@@ -5,9 +5,9 @@
 # https://kubernetes.io/docs/tasks/tools/
 
 # Colored output
-code_grn() { tput setaf 2; printf '%s\n' "${1}"; tput sgr0; }
-code_red() { tput setaf 1; printf '%s\n' "${1}"; tput sgr0; }
-code_yel() { tput setaf 3; printf '%s\n' "${1}"; tput sgr0; }
+code_err() { tput setaf 1; printf '%s\n' "$*" >&2; tput sgr0; }
+code_grn() { tput setaf 2; printf '%s\n' "$*"; tput sgr0; }
+code_yel() { tput setaf 3; printf '%s\n' "$*"; tput sgr0; }
 
 # Define funciton to delete temporary install files
 clean_up() {
@@ -35,7 +35,7 @@ case "${os_info}" in
     arch="amd64"
     ;;
   *)
-    code_red "[ERROR] Unsupported OS. Exiting"; exit 1 ;;
+    code_err "[ERROR] Unsupported OS. Exiting"; exit 1 ;;
 esac
 
 # Variables
@@ -58,8 +58,8 @@ kube_convert_sum_file="${kube_convert_binary}.sha256"
 case :$PATH: in
   *:"${bin_dir}":*)  ;;  # do nothing
   *)
-    code_red "[ERROR] ${bin_dir} was not found in \$PATH!"
-    code_red "Add ${bin_dir} to PATH or select another directory to install to"
+    code_err "[ERROR] ${bin_dir} was not found in \$PATH!"
+    code_err "Add ${bin_dir} to PATH or select another directory to install to"
     exit 1 ;;
 esac
 
@@ -88,13 +88,13 @@ curl -sL -o "${tmp_dir}/${kube_convert_sum_file}" "${kube_url}/${kube_convert_su
 # Verify shasum
 printf '%s\n' "[INFO] Verifying ${kube_binary}"
 if ! awk -v var="${kube_binary}" '{print $1, "", var}' "${kube_sum_file}" | shasum -qc - ; then
-  code_red "[ERROR] Problem with ${kube_binary} checksum!"
+  code_err "[ERROR] Problem with ${kube_binary} checksum!"
   exit 1
 fi
 
 printf '%s\n' "[INFO] Verifying ${kube_convert_binary}"
 if ! awk -v var="${kube_convert_binary}" '{print $1, "", var}' "${kube_convert_sum_file}" | shasum -qc - ; then
-  code_red "[ERROR] Problem with ${kube_convert_binary} checksum!"
+  code_err "[ERROR] Problem with ${kube_convert_binary} checksum!"
   exit 1
 fi
 
